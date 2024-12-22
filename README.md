@@ -43,7 +43,7 @@ npm install sharpify
 ## Usage
 
 ```typescript
-import { Sharpify } from 'sharpify';
+import { Sharpify } from 'sharpify-image';
 
 // Basic image processing
 const processImage = async (inputBuffer: Buffer) => {
@@ -175,8 +175,8 @@ try {
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yassinemontassar/Sharpify-
-cd Sharpify-
+git clone https://github.com/yassinemontassar/Sharpify
+cd Sharpify
 ```
 
 2. Install dependencies:
