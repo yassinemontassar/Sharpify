@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]  # Updated Node.js versions to avoid sharp issues
 
     steps:
     - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: '20.x'  # Make sure you're using a Node.js version compatible with sharp
         registry-url: 'https://registry.npmjs.org'
         
     - name: Install dependencies
