@@ -4,7 +4,7 @@ A TypeScript library for image processing using Sharp, providing a simple and ef
 
 ## Requirements
 
-- Node.js >= 16
+- Node.js >= 18
 - TypeScript >= 5.3
 - Sharp >= 0.33
 
