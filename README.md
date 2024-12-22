@@ -1,4 +1,4 @@
-# Image Processor
+# Sharpify
 
 A TypeScript library for image processing using Sharp, providing a simple and efficient interface for common image operations while maintaining high performance and quality.
 
@@ -11,7 +11,7 @@ A TypeScript library for image processing using Sharp, providing a simple and ef
 ## Installation
 
 ```bash
-npm install @yassinemontassar/image-processor
+npm install sharpify
 ```
 
 ## Features
@@ -43,11 +43,11 @@ npm install @yassinemontassar/image-processor
 ## Usage
 
 ```typescript
-import { ImageProcessor } from '@yassinemontassar/image-processor';
+import { Sharpify } from 'sharpify';
 
 // Basic image processing
 const processImage = async (inputBuffer: Buffer) => {
-  const processed = await ImageProcessor.process(inputBuffer, {
+  const processed = await Sharpify.process(inputBuffer, {
     width: 800,
     format: 'webp',
     quality: 80
@@ -58,7 +58,7 @@ const processImage = async (inputBuffer: Buffer) => {
 
 // Create an avatar with circular crop
 const createAvatar = async (inputBuffer: Buffer) => {
-  const avatar = await ImageProcessor.process(inputBuffer, {
+  const avatar = await Sharpify.process(inputBuffer, {
     width: 200,
     format: 'jpeg',
     radius: true
@@ -69,8 +69,8 @@ const createAvatar = async (inputBuffer: Buffer) => {
 
 // Analyze image colors
 const analyzeImage = async (inputBuffer: Buffer) => {
-  const stats = await ImageProcessor.Analyzer.getStats(inputBuffer);
-  const dominantColor = await ImageProcessor.Analyzer.getDominantColor(inputBuffer);
+  const stats = await Sharpify.Analyzer.getStats(inputBuffer);
+  const dominantColor = await Sharpify.Analyzer.getDominantColor(inputBuffer);
   
   return { stats, dominantColor };
 };
@@ -78,12 +78,12 @@ const analyzeImage = async (inputBuffer: Buffer) => {
 
 ## API Reference
 
-### ImageProcessor.process(input, options)
+### Sharpify.process(input, options)
 
 Main method to process images with various options.
 
 ```typescript
-interface ImageProcessorOptions {
+interface SharpifyOptions {
   // Dimensions
   width?: number;
   height?: number;
@@ -113,16 +113,16 @@ interface ImageProcessorOptions {
 }
 ```
 
-### ImageProcessor.Effects
+### Sharpify.Effects
 
 Namespace containing image effect operations.
 
 ```typescript
 // Sharpen an image
-const sharpened = await ImageProcessor.Effects.sharpen(imageBuffer);
+const sharpened = await Sharpify.Effects.sharpen(imageBuffer);
 
 // Adjust image properties
-const adjusted = await ImageProcessor.Effects.adjust(
+const adjusted = await Sharpify.Effects.adjust(
   imageBuffer,
   1.1, // brightness
   1.0, // saturation
@@ -130,25 +130,25 @@ const adjusted = await ImageProcessor.Effects.adjust(
 );
 ```
 
-### ImageProcessor.Analyzer
+### Sharpify.Analyzer
 
 Namespace containing image analysis operations.
 
 ```typescript
 // Get image statistics
-const stats = await ImageProcessor.Analyzer.getStats(imageBuffer);
+const stats = await Sharpify.Analyzer.getStats(imageBuffer);
 
 // Get dominant color
-const color = await ImageProcessor.Analyzer.getDominantColor(imageBuffer);
+const color = await Sharpify.Analyzer.getDominantColor(imageBuffer);
 ```
 
-### ImageProcessor.batchProcess
+### Sharpify.batchProcess
 
 Process multiple images with the same options.
 
 ```typescript
 const images = [/* array of image buffers */];
-const results = await ImageProcessor.batchProcess(images, {
+const results = await Sharpify.batchProcess(images, {
   width: 800,
   format: 'webp'
 });
@@ -160,9 +160,9 @@ The library uses custom error types for better error handling:
 
 ```typescript
 try {
-  const processed = await ImageProcessor.process(imageBuffer, options);
+  const processed = await Sharpify.process(imageBuffer, options);
 } catch (error) {
-  if (error instanceof ImageProcessingError) {
+  if (error instanceof SharpifyError) {
     console.error('Processing failed:', error.message);
     console.error('Operation:', error.operation);
   }
@@ -174,6 +174,11 @@ try {
 ### Setup
 
 1. Clone the repository
+```bash
+git clone https://github.com/yassinemontassar/Sharpify-
+cd Sharpify-
+```
+
 2. Install dependencies:
 ```bash
 npm install
