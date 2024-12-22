@@ -1,38 +1,39 @@
-  {
-    "name": "sharpify",
-    "version": "1.0.0",
-    "description": "A TypeScript library for image processing using Sharp",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "files": [
-      "dist",
-      "README.md",
-      "LICENSE"
-    ],
-    "scripts": {
-      "build": "tsc",
-      "test": "jest",
-      "prepare": "npm run build",
-      "publish": "npm publish --access public"
-    },
-    "keywords": [
-      "image",
-      "processing",
-      "sharp",
-      "resize",
-      "convert"
-    ],
-    "author": "Yassine Montassar (https://www.linkedin.com/in/yassine-montassar-7aa3ab283/s)",
-    "license": "MIT",
-    "dependencies": {
-      "sharp": "^0.33.2"
-    },
-    "devDependencies": {
-      "@types/jest": "^29.5.11",
-      "@types/node": "^20.11.5",
-      "@types/sharp": "^0.31.1",
-      "jest": "^29.7.0",
-      "ts-jest": "^29.1.1",
-      "typescript": "^5.3.3"
-    }
-  }
+{
+  "name": "sharpify-image",  
+  "version": "1.0.0",
+  "description": "A TypeScript library for image processing using Sharp",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepare": "npm run build",
+    "publish": "npm publish --access public"
+  },
+  "keywords": [
+    "image",
+    "processing",
+    "sharp",
+    "resize",
+    "convert"
+  ],
+  "author": "Yassine Montassar (https://www.linkedin.com/in/yassine-montassar-7aa3ab283/s)",
+  "license": "MIT",
+  "dependencies": {
+    "sharp": "^0.33.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.11.5",
+    "@types/sharp": "^0.31.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  },
+  "private": false
+}
