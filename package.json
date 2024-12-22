@@ -1,6 +1,6 @@
   {
     "name": "image-processor",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "A TypeScript library for image processing using Sharp",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
