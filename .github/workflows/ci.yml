@@ -3,13 +3,13 @@ name: CI/CD
 on:
   push:
     branches:
-      - master  # Listen for push events on the 'master' branch
+      - master  # Or 'main', depending on your default branch name
   pull_request:
     branches:
-      - master  # Listen for PR events on the 'master' branch
+      - master  # Or 'main'
   release:
     types:
-      - created  # Trigger this workflow when a release is created
+      - created
 
 jobs:
   test:
@@ -35,7 +35,7 @@ jobs:
   publish:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'created'  # Make sure the release event is triggered
+    if: github.event_name == 'release' && github.event.action == 'created'
     steps:
     - uses: actions/checkout@v4
     - name: Setup Node.js
