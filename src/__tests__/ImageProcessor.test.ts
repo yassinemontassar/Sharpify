@@ -71,7 +71,7 @@ describe('Sharpify Tests', () => {
 
   describe('Original Functionality', () => {
     it('should return image stats', async () => {
-      const stats = await Sharpify.Analyzer.getStats(imageBuffer);
+      const stats = await Sharpify.getStats(imageBuffer);
       expect(stats).toBeDefined();
       expect(stats).toHaveProperty('size');
       expect(stats).toHaveProperty('width', TEST_WIDTH);
@@ -79,7 +79,7 @@ describe('Sharpify Tests', () => {
     });
 
     it('should return the dominant color of the image', async () => {
-      const dominantColor = await Sharpify.Analyzer.getDominantColor(multiColorImageBuffer);
+      const dominantColor = await Sharpify.getDominantColor(multiColorImageBuffer);
       expect(dominantColor).toBeDefined();
       expect(dominantColor).toMatch(/^rgb\(\d+,\s*\d+,\s*\d+\)$/);
     });
@@ -93,30 +93,27 @@ describe('Sharpify Tests', () => {
       expect(thumbnail.format).toBe(TEST_FORMAT);
     });
 
-    it('should create an avatar image', async () => {
-      const avatar = await Sharpify.process(imageBuffer, {
-        width: 200,
-        format: 'jpeg',
-        radius: AVATAR_RADIUS,
-      });
-      expect(avatar.data).toBeDefined();
-      expect(avatar.width).toBe(200);
-      expect(avatar.format).toBe('jpeg');
-    });
+ 
   });
 
   describe('Effects Tests', () => {
     it('should apply sharpening effect', async () => {
-      const sharpened = await Sharpify.Effects.sharpen(imageBuffer);
+      const sharpened = await Sharpify.process(imageBuffer, { sharpen: true });
+      
+      // Ensure the processed image has a valid buffer in 'data'
       expect(sharpened).toBeDefined();
-      expect(Buffer.isBuffer(sharpened)).toBe(true);
+      expect(Buffer.isBuffer(sharpened.data)).toBe(true); // Access 'data' for the buffer
     });
+    
 
     it('should apply adjustment effect', async () => {
-      const enhanced = await Sharpify.Effects.adjust(imageBuffer, 1.1, 1.0, 1.1);
+      const enhanced = await Sharpify.process(imageBuffer, { brightness: 1.2, contrast: 1.3 });
+      
+      // Ensure the processed image has a valid buffer in 'data'
       expect(enhanced).toBeDefined();
-      expect(Buffer.isBuffer(enhanced)).toBe(true);
+      expect(Buffer.isBuffer(enhanced.data)).toBe(true); // Access 'data' for the buffer
     });
+    
   });
 
   describe('Error Handling Tests', () => {
@@ -145,7 +142,7 @@ describe('Sharpify Tests', () => {
     it('should process 10 images in batch', async () => {
       const results = await Sharpify.batchProcess(Array(10).fill(imageBuffer), {
         width: TEST_WIDTH,
-        format: TEST_FORMAT,
+        format: TEST_FORMAT,       
       });
       expect(results).toHaveLength(10);
       results.forEach((result) => {

@@ -1,6 +1,9 @@
 # Sharpify
 
-A TypeScript library for image processing using Sharp, providing a simple and efficient interface for common image operations while maintaining high performance and quality.
+A powerful TypeScript library for image processing built on top of Sharp. Sharpify provides an intuitive interface for common image manipulation tasks with built-in caching and error handling.
+
+[![npm version](https://img.shields.io/npm/v/sharpify.svg)](https://www.npmjs.com/package/sharpify)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Requirements
 
@@ -8,202 +11,216 @@ A TypeScript library for image processing using Sharp, providing a simple and ef
 - TypeScript >= 5.3
 - Sharp >= 0.33
 
+## Features
+
+- 🖼️ Comprehensive image processing capabilities
+- 🚀 Built-in image caching for improved performance
+- 🎨 Advanced color manipulation and effects
+- 💧 Watermark support with customizable positioning
+- 📏 Flexible resizing and cropping options
+- 🎯 Batch processing support
+- 💪 Strong TypeScript support
+- 🐛 Robust error handling
+
 ## Installation
 
 ```bash
 npm install sharpify
+# or
+yarn add sharpify
+# or
+pnpm add sharpify
 ```
 
-## Features
-
-- 🖼️ **Basic Image Operations**
-  - Resize images with preset dimensions
-  - Convert between formats (JPEG, PNG, WebP, AVIF)
-  - Adjust image quality and compression
-  - Create thumbnails and avatars
-
-- 🎨 **Image Effects**
-  - Sharpen images
-  - Adjust brightness, contrast, and saturation
-  - Apply blur effects
-  - Rotate and flip images
-  - Grayscale conversion
-
-- 🔍 **Image Analysis**
-  - Get image statistics and metadata
-  - Extract dominant colors
-  - Analyze image characteristics
-
-- ⚡ **Performance Features**
-  - Built-in caching system
-  - Batch processing support
-  - Memory-efficient operations
-  - Queue management for large batches
-
-## Usage
+## Quick Start
 
 ```typescript
-import { Sharpify } from 'sharpify-image';
+import { Sharpify } from 'sharpify';
+import { readFileSync } from 'fs';
 
-// Basic image processing
-const processImage = async (inputBuffer: Buffer) => {
-  const processed = await Sharpify.process(inputBuffer, {
-    width: 800,
-    format: 'webp',
-    quality: 80
-  });
-  
-  return processed.data;
-};
+// Read an image
+const imageBuffer = readFileSync('input.jpg');
 
-// Create an avatar with circular crop
-const createAvatar = async (inputBuffer: Buffer) => {
-  const avatar = await Sharpify.process(inputBuffer, {
-    width: 200,
-    format: 'jpeg',
-    radius: true
-  });
-  
-  return avatar.data;
-};
+// Process the image
+const processed = await Sharpify.process(imageBuffer, {
+  width: 800,
+  height: 600,
+  format: 'webp',
+  quality: 80,
+  grayscale: true
+});
 
-// Analyze image colors
-const analyzeImage = async (inputBuffer: Buffer) => {
-  const stats = await Sharpify.Analyzer.getStats(inputBuffer);
-  const dominantColor = await Sharpify.Analyzer.getDominantColor(inputBuffer);
-  
-  return { stats, dominantColor };
-};
+// Access the processed image data
+console.log(processed.metadata);
 ```
 
 ## API Reference
 
-### Sharpify.process(input, options)
+### `Sharpify.process(input: Buffer, options?: ProcessOptions): Promise<ProcessedImage>`
 
-Main method to process images with various options.
+Process a single image with various options.
+
+#### Options
 
 ```typescript
-interface SharpifyOptions {
-  // Dimensions
-  width?: number;
-  height?: number;
-  
-  // Format options
+{
   format?: 'jpeg' | 'png' | 'webp' | 'avif';
-  quality?: number;
-  
-  // Fit and positioning
-  fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
-  position?: 'center' | 'top' | 'right' | 'bottom' | 'left';
-  background?: string;
-  
-  // Effects
-  radius?: boolean | number;
-  blur?: number;
-  sharpen?: boolean;
-  grayscale?: boolean;
-  rotate?: number;
-  flip?: boolean;
-  flop?: boolean;
-  
-  // Adjustments
-  brightness?: number;
-  saturation?: number;
-  contrast?: number;
+  quality?: number;                    // 1-100
+  width?: number;                      // output width
+  height?: number;                     // output height
+  crop?: {                            // crop coordinates
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+  blur?: number;                       // blur radius
+  sharpen?: boolean;                   // apply sharpening
+  grayscale?: boolean;                 // convert to grayscale
+  rotate?: number;                     // rotation angle
+  flip?: boolean;                      // vertical flip
+  flop?: boolean;                      // horizontal flip
+  tint?: string;                       // color tint
+  brightness?: number;                 // adjust brightness
+  saturation?: number;                 // adjust saturation
+  contrast?: number;                   // adjust contrast
+  watermark?: {
+    text: string;                      // watermark text
+    font?: string;                     // font family
+    size?: number;                     // font size
+    color?: string;                    // text color
+    opacity?: number;                  // 0-1
+    position?: WatermarkPosition;      // positioning
+  };
 }
 ```
 
-### Sharpify.Effects
-
-Namespace containing image effect operations.
+#### Return Value (ProcessedImage)
 
 ```typescript
-// Sharpen an image
-const sharpened = await Sharpify.Effects.sharpen(imageBuffer);
-
-// Adjust image properties
-const adjusted = await Sharpify.Effects.adjust(
-  imageBuffer,
-  1.1, // brightness
-  1.0, // saturation
-  1.1  // contrast
-);
+{
+  data: Buffer;              // processed image buffer
+  format: string;            // output format
+  width: number;            // output width
+  height: number;           // output height
+  size: number;            // file size in bytes
+  metadata: {
+    hasAlpha: boolean;     // alpha channel presence
+    isAnimated: boolean;   // animation status
+    pages?: number;        // number of pages/frames
+    compression?: string;  // compression type
+    colorSpace?: string;   // color space
+  };
+}
 ```
 
-### Sharpify.Analyzer
+### `Sharpify.getStats(input: Buffer): Promise<ImageStats>`
 
-Namespace containing image analysis operations.
+Get detailed statistics about an image.
 
 ```typescript
-// Get image statistics
-const stats = await Sharpify.Analyzer.getStats(imageBuffer);
-
-// Get dominant color
-const color = await Sharpify.Analyzer.getDominantColor(imageBuffer);
+const stats = await Sharpify.getStats(imageBuffer);
+console.log(stats);
+// {
+//   size: number,
+//   format: string,
+//   width: number,
+//   height: number,
+//   aspectRatio: number,
+//   hasAlpha: boolean,
+//   colorSpace: string,
+//   channels: number,
+//   compression?: string
+// }
 ```
 
-### Sharpify.batchProcess
+### `Sharpify.getDominantColor(input: Buffer): Promise<string>`
 
-Process multiple images with the same options.
+Extract the dominant color from an image.
 
 ```typescript
-const images = [/* array of image buffers */];
-const results = await Sharpify.batchProcess(images, {
+const color = await Sharpify.getDominantColor(imageBuffer);
+console.log(color); // Returns RGB format, e.g., "rgb(123, 45, 67)"
+```
+
+### `Sharpify.batchProcess(inputs: Buffer[], options?: ProcessOptions): Promise<ProcessedImage[]>`
+
+Process multiple images in parallel with the same options.
+
+```typescript
+const images = [buffer1, buffer2, buffer3];
+const processed = await Sharpify.batchProcess(images, {
+  format: 'webp',
+  quality: 80
+});
+```
+
+## Examples
+
+### Basic Image Resizing
+
+```typescript
+const processed = await Sharpify.process(imageBuffer, {
   width: 800,
-  format: 'webp'
+  height: 600
+});
+```
+
+### Format Conversion with Quality Control
+
+```typescript
+const processed = await Sharpify.process(imageBuffer, {
+  format: 'webp',
+  quality: 85
+});
+```
+
+### Adding a Watermark
+
+```typescript
+const processed = await Sharpify.process(imageBuffer, {
+  watermark: {
+    text: '© 2024 My Company',
+    position: 'bottom-right',
+    size: 24,
+    color: 'white',
+    opacity: 0.8
+  }
+});
+```
+
+### Advanced Image Enhancement
+
+```typescript
+const processed = await Sharpify.process(imageBuffer, {
+  brightness: 1.2,
+  contrast: 1.1,
+  saturation: 1.3,
+  sharpen: true
 });
 ```
 
 ## Error Handling
 
-The library uses custom error types for better error handling:
+Sharpify provides detailed error information through the `ImageProcessingError` class:
 
 ```typescript
 try {
   const processed = await Sharpify.process(imageBuffer, options);
 } catch (error) {
-  if (error instanceof SharpifyError) {
-    console.error('Processing failed:', error.message);
-    console.error('Operation:', error.operation);
+  if (error instanceof ImageProcessingError) {
+    console.error(`Operation: ${error.operation}`);
+    console.error(`Message: ${error.message}`);
+    console.error(`Original Error: ${error.originalError}`);
   }
 }
 ```
 
-## Development
+## Performance Considerations
 
-### Setup
-
-1. Clone the repository
-```bash
-git clone https://github.com/yassinemontassar/Sharpify
-cd Sharpify
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-### Scripts
-
-- `npm run build` - Build the project
-- `npm test` - Run tests
-- `npm run prepare` - Prepare for publishing
-
-### Testing
-
-The library uses Jest for testing. Run the test suite:
-
-```bash
-npm test
-```
-
-## Performance Tips
-
-- Use WebP format for best compression/quality ratio
-- Enable caching for repeated operations
-- Use batch processing for multiple images
-- Consider image dimensions and quality settings for optimal file size
+- The library implements automatic caching of processed images to improve performance for repeated operations
+- Batch processing is performed in parallel for optimal performance
+- Memory usage scales with image size and number of concurrent operations
 
 ## Contributing
 
@@ -215,24 +232,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## Author
-
-Yassine Montassar
-- LinkedIn: [Yassine Montassar](https://www.linkedin.com/in/yassine-montassar-7aa3ab283/)
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Dependencies
+## Author
 
-### Runtime Dependencies
-- sharp: ^0.33.2
-
-### Development Dependencies
-- @types/jest: ^29.5.11
-- @types/node: ^20.11.5
-- @types/sharp: ^0.31.1
-- jest: ^29.7.0
-- ts-jest: ^29.1.1
-- typescript: ^5.3.3
+Yassine Montassar - [LinkedIn](https://www.linkedin.com/in/yassine-montassar-7aa3ab283/)
