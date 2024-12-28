@@ -5,7 +5,11 @@ A powerful TypeScript library for image processing built on top of Sharp. Sharpi
 [![npm version](https://img.shields.io/npm/v/sharpify.svg)](https://www.npmjs.com/package/sharpify)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## Repository
 
+Find the source code and documentation on GitHub:
+
+[https://github.com/yassinemontassar/Sharpify](https://github.com/yassinemontassar/Sharpify)
 ## Requirements
 
 - Node.js >= 18
