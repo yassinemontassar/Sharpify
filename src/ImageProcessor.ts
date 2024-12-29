@@ -1,14 +1,14 @@
 import sharp from 'sharp';
-import { ImageCache } from './cache'; // Import ImageCache class
-import { ImageProcessingError } from './errors'; // Import ImageProcessingError class
+import { ImageCache } from './cache';
+import { ImageProcessingError } from './errors';
 import { ImageStats, ProcessedImage, WatermarkPosition } from './types';
 
 type ImageFormat = 'jpeg' | 'png' | 'webp' | 'avif';
 
 export class Sharpify {
-  private static imageCache = new ImageCache(); // Instantiate cache
+  private static imageCache = new ImageCache();
 
-  private constructor() {} // Prevent instantiation
+  private constructor() {}
 
   static async getStats(input: Buffer): Promise<ImageStats> {
     try {
@@ -63,39 +63,32 @@ export class Sharpify {
         color?: string;
         opacity?: number;
         position?: WatermarkPosition;
+        background?: boolean;
+        padding?: number;
       };
     } = {}
   ): Promise<ProcessedImage> {
     try {
-      // Check cache first
       const cacheKey = JSON.stringify({ input, options });
       const cachedImage = this.imageCache.get(cacheKey);
       if (cachedImage) {
-        return cachedImage; // Return cached result if available
+        return cachedImage;
       }
 
       let pipeline = sharp(input);
 
-      // Apply resizing or cropping
       if (options.width || options.height) {
         pipeline = pipeline.resize(options.width, options.height);
       }
       if (options.crop) {
-        pipeline = pipeline.extract({
-          left: options.crop.left,
-          top: options.crop.top,
-          width: options.crop.width,
-          height: options.crop.height,
-        });
+        pipeline = pipeline.extract(options.crop);
       }
 
-      // Apply effects
       if (options.blur) pipeline = pipeline.blur(options.blur);
       if (options.sharpen) pipeline = pipeline.sharpen();
       if (options.grayscale) pipeline = pipeline.grayscale();
       if (options.tint) pipeline = pipeline.tint(options.tint);
 
-      // Adjust brightness, saturation, and contrast
       if (
         typeof options.brightness === 'number' ||
         typeof options.saturation === 'number'
@@ -109,12 +102,10 @@ export class Sharpify {
         pipeline = pipeline.linear(options.contrast, -(options.contrast - 1) * 128);
       }
 
-      // Transformations
       if (options.rotate) pipeline = pipeline.rotate(options.rotate);
       if (options.flip) pipeline = pipeline.flip();
       if (options.flop) pipeline = pipeline.flop();
 
-      // Add watermark
       if (options.watermark) {
         const watermarked = await this.addWatermark(
           await pipeline.toBuffer(),
@@ -124,14 +115,12 @@ export class Sharpify {
         pipeline = sharp(watermarked);
       }
 
-      // Change format
       if (options.format) {
         pipeline = pipeline.toFormat(options.format, {
           quality: options.quality || 80,
         });
       }
 
-      // Process the image
       const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
       const metadata = await sharp(data).metadata();
 
@@ -150,9 +139,7 @@ export class Sharpify {
         },
       };
 
-      // Cache the result before returning
       this.imageCache.set(cacheKey, processedImage);
-
       return processedImage;
     } catch (error) {
       throw new ImageProcessingError('Failed to process image', error as Error, 'process');
@@ -163,17 +150,21 @@ export class Sharpify {
     input: Buffer,
     text: string,
     {
-      font = 'Arial',
+      font = 'sans-serif',
       size = 24,
       color = 'white',
       opacity = 1,
       position = 'bottom-right',
+      background = true,
+      padding = 20
     }: {
       font?: string;
       size?: number;
       color?: string;
       opacity?: number;
       position?: WatermarkPosition;
+      background?: boolean;
+      padding?: number;
     }
   ): Promise<Buffer> {
     try {
@@ -188,17 +179,21 @@ export class Sharpify {
         metadata.width,
         metadata.height,
         text,
-        size,
-        color,
-        opacity,
-        position
+        {
+          font,
+          size,
+          color,
+          opacity,
+          position,
+          background,
+          padding
+        }
       );
 
       return image
         .composite([{
           input: Buffer.from(svg),
-          top: 0,
-          left: 0,
+          blend: 'over'
         }])
         .toBuffer();
     } catch (error) {
@@ -210,38 +205,76 @@ export class Sharpify {
     width: number,
     height: number,
     text: string,
-    size: number,
-    color: string,
-    opacity: number,
-    position: WatermarkPosition
+    {
+      font,
+      size,
+      color,
+      opacity,
+      position,
+      background,
+      padding
+    }: {
+      font: string;
+      size: number;
+      color: string;
+      opacity: number;
+      position: WatermarkPosition;
+      background: boolean;
+      padding: number;
+    }
   ): string {
-    const padding = 10;
+    const estimatedTextWidth = text.length * (size * 0.6);
     const { x, y } = this.getWatermarkPosition(
       width,
       height,
-      text.length * size / 2,
+      estimatedTextWidth,
       size,
       position,
       padding
     );
-  
+
+    const textAnchor = position.includes('right') ? 'end' : 
+                      position.includes('center') ? 'middle' : 
+                      'start';
+
     return `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <style>
-          .text {
-            font-family: sans-serif;
-            font-size: ${size}px;
-            fill: ${color};
-            fill-opacity: ${opacity};
-            dominant-baseline: middle;
-            text-anchor: middle;
-          }
-        </style>
-        <text x="${x}" y="${y}" class="text">${text}</text>
+        <defs>
+          <style>
+            @font-face {
+              font-family: 'WatermarkFont';
+              src: local('${font}'), local('Arial'), local('Helvetica');
+            }
+          </style>
+        </defs>
+        <g filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))">
+          ${background ? `
+            <rect
+              x="${x - (textAnchor === 'end' ? estimatedTextWidth : textAnchor === 'middle' ? estimatedTextWidth/2 : 0) - padding/2}"
+              y="${y - size - padding/2}"
+              width="${estimatedTextWidth + padding}"
+              height="${size + padding}"
+              fill="rgba(0,0,0,0.3)"
+              rx="3"
+              ry="3"
+            />
+          ` : ''}
+          <text
+            x="${x}"
+            y="${y}"
+            font-family="WatermarkFont, ${font}, Arial, sans-serif"
+            font-size="${size}px"
+            fill="${color}"
+            fill-opacity="${opacity}"
+            text-anchor="${textAnchor}"
+            dominant-baseline="text-after-edge"
+            textLength="${estimatedTextWidth}"
+            lengthAdjust="spacingAndGlyphs"
+          >${text}</text>
+        </g>
       </svg>
     `;
   }
-  
 
   private static getWatermarkPosition(
     imageWidth: number,
@@ -251,21 +284,23 @@ export class Sharpify {
     position: WatermarkPosition,
     padding: number
   ): { x: number; y: number } {
-    let x: number = imageWidth / 2;
-    let y: number = imageHeight / 2;
-
-    const effectivePadding = padding + fontSize / 4;
+    let x: number;
+    let y: number;
 
     if (position.includes('top')) {
-      y = fontSize + effectivePadding;
+      y = padding + fontSize;
     } else if (position.includes('bottom')) {
-      y = imageHeight - effectivePadding;
+      y = imageHeight - padding;
+    } else {
+      y = imageHeight / 2;
     }
 
     if (position.includes('left')) {
-      x = textWidth / 2 + effectivePadding;
+      x = padding;
     } else if (position.includes('right')) {
-      x = imageWidth - textWidth / 2 - effectivePadding;
+      x = imageWidth - padding;
+    } else {
+      x = imageWidth / 2;
     }
 
     return { x, y };
@@ -273,36 +308,11 @@ export class Sharpify {
 
   static async batchProcess(
     inputs: Buffer[],
-    options: {
-      format?: ImageFormat;
-      quality?: number;
-      width?: number;
-      height?: number;
-      crop?: { left: number; top: number; width: number; height: number };
-      blur?: number;
-      sharpen?: boolean;
-      grayscale?: boolean;
-      rotate?: number;
-      flip?: boolean;
-      flop?: boolean;
-      tint?: string;
-      brightness?: number;
-      saturation?: number;
-      contrast?: number;
-      watermark?: {
-        text: string;
-        font?: string;
-        size?: number;
-        color?: string;
-        opacity?: number;
-        position?: WatermarkPosition;
-      };
-    } = {}
+    options: Parameters<typeof Sharpify.process>[1] = {}
   ): Promise<ProcessedImage[]> {
     try {
-      // Process each image in parallel
       const promises = inputs.map(input => this.process(input, options));
-      return Promise.all(promises); // Returns an array of processed images
+      return Promise.all(promises);
     } catch (error) {
       throw new ImageProcessingError('Batch image processing failed', error as Error, 'batchProcess');
     }
