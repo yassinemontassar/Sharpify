@@ -232,21 +232,16 @@ export class Sharpify {
       position,
       padding
     );
-
+  
     const textAnchor = position.includes('right') ? 'end' : 
                       position.includes('center') ? 'middle' : 
                       'start';
-
+  
+    // Simplified font stack without @font-face
+    const fontStack = `${font}, Arial, Helvetica, sans-serif`;
+  
     return `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <style>
-            @font-face {
-              font-family: 'WatermarkFont';
-              src: local('${font}'), local('Arial'), local('Helvetica');
-            }
-          </style>
-        </defs>
         <g filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))">
           ${background ? `
             <rect
@@ -262,7 +257,7 @@ export class Sharpify {
           <text
             x="${x}"
             y="${y}"
-            font-family="WatermarkFont, ${font}, Arial, sans-serif"
+            font-family="${fontStack}"
             font-size="${size}px"
             fill="${color}"
             fill-opacity="${opacity}"
@@ -275,6 +270,7 @@ export class Sharpify {
       </svg>
     `;
   }
+  
 
   private static getWatermarkPosition(
     imageWidth: number,
