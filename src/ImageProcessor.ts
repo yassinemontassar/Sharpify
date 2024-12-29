@@ -188,7 +188,6 @@ export class Sharpify {
         metadata.width,
         metadata.height,
         text,
-        font,
         size,
         color,
         opacity,
@@ -211,7 +210,6 @@ export class Sharpify {
     width: number,
     height: number,
     text: string,
-    font: string = 'Arial, Helvetica, sans-serif', 
     size: number,
     color: string,
     opacity: number,
@@ -226,12 +224,12 @@ export class Sharpify {
       position,
       padding
     );
-
+  
     return `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <style>
           .text {
-            font-family: ${font};
+            font-family: sans-serif;
             font-size: ${size}px;
             fill: ${color};
             fill-opacity: ${opacity};
@@ -243,6 +241,7 @@ export class Sharpify {
       </svg>
     `;
   }
+  
 
   private static getWatermarkPosition(
     imageWidth: number,
