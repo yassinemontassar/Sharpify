@@ -58,6 +58,106 @@ const processed = await Sharpify.process(imageBuffer, {
 // Access the processed image data
 console.log(processed.metadata);
 ```
+## Type Definitions
+
+Sharpify provides several TypeScript types and interfaces to make development easier. You can import these types directly from the library:
+
+```typescript
+/**
+ * Represents metadata and details of an image.
+ */
+export interface ImageStats {
+  /** Size of the image file in bytes */
+  size: number;
+  /** Format of the image (e.g., 'jpeg', 'png') */
+  format: string;
+  /** Width of the image in pixels */
+  width: number;
+  /** Height of the image in pixels */
+  height: number;
+  /** Aspect ratio calculated as width / height */
+  aspectRatio: number;
+  /** Indicates if the image contains an alpha channel */
+  hasAlpha: boolean;
+  /** Color space of the image (e.g., 'srgb') */
+  colorSpace: string;
+  /** Number of color channels in the image */
+  channels: number;
+  /** Compression details, if applicable */
+  compression?: unknown;
+}
+
+/**
+ * Defines available positions for the watermark.
+ */
+export type WatermarkPosition =
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'center';
+
+/**
+ * Specifies font options for watermark text.
+ */
+export type WatermarkFont =
+  | 'Arial'
+  | 'Helvetica'
+  | 'Times New Roman'
+  | 'Courier New'
+  | 'Verdana'
+  | 'Georgia'
+  | 'Custom'; // For custom fonts, you could specify any font family name
+
+/**
+ * Options for customizing image processing behavior.
+ */
+export interface ImageProcessorOptions {
+  width?: number; // Desired output width of the image in pixels
+  height?: number; // Desired output height of the image in pixels
+  fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside'; // Resizing method
+  position?: WatermarkPosition; // Position for cropping or watermarking
+  background?: { r: number; g: number; b: number; alpha: number }; // Background color
+  radius?: number; // Radius for rounded corners
+  blur?: number; // Blur intensity
+  sharpen?: boolean; // Apply sharpening
+  grayscale?: boolean; // Convert to grayscale
+  rotate?: number; // Rotation angle
+  flip?: boolean; // Vertical flip
+  flop?: boolean; // Horizontal flip
+  tint?: string; // Tint color
+  brightness?: number; // Adjust brightness
+  saturation?: number; // Adjust saturation
+  contrast?: number; // Adjust contrast
+  format?: 'jpeg' | 'png' | 'webp' | 'avif'; // Output format
+  quality?: number; // Compression quality (1-100)
+  watermark?: {
+    text: string; // Watermark text
+    font?: WatermarkFont; // Font family
+    size?: number; // Font size
+    color?: string; // Text color
+    opacity?: number; // Text opacity (0-1)
+    position?: WatermarkPosition; // Watermark position
+  };
+}
+
+/**
+ * Represents a processed image and its details.
+ */
+export interface ProcessedImage {
+  data: Buffer; // Image data as a buffer
+  format: string; // Format of the processed image
+  width: number; // Width in pixels
+  height: number; // Height in pixels
+  size: number; // Size in bytes
+  metadata: {
+    hasAlpha?: boolean; // Alpha channel presence
+    isAnimated: boolean; // Indicates if the image is animated
+    pages?: number; // Number of pages or frames
+    compression?: unknown; // Compression details
+    colorSpace?: string; // Color space
+  };
+}
 
 ## API Reference
 
