@@ -150,7 +150,7 @@ export class Sharpify {
     input: Buffer,
     text: string,
     {
-      font = 'system-ui', 
+      font = 'system-ui',
       size = 24,
       color = 'white',
       opacity = 1,
@@ -238,7 +238,7 @@ export class Sharpify {
                       'start';
   
     // Simplified font stack without @font-face
-    const fontStack = `${font}, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
+    const fontStack = `${font}, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial, sans-serif`;
   
     return `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
