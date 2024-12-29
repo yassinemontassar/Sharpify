@@ -10,6 +10,7 @@ A powerful TypeScript library for image processing built on top of Sharp. Sharpi
 Find the source code and documentation on GitHub:
 
 [https://github.com/yassinemontassar/Sharpify](https://github.com/yassinemontassar/Sharpify)
+
 ## Requirements
 
 - Node.js >= 18
@@ -58,110 +59,46 @@ const processed = await Sharpify.process(imageBuffer, {
 // Access the processed image data
 console.log(processed.metadata);
 ```
+
 ## Type Definitions
 
-Sharpify provides several TypeScript types and interfaces to make development easier. You can import these types directly from the library:
+Sharpify comes with comprehensive TypeScript definitions. You can import the types directly:
 
 ```typescript
-/**
- * Represents metadata and details of an image.
- */
-export interface ImageStats {
-  /** Size of the image file in bytes */
-  size: number;
-  /** Format of the image (e.g., 'jpeg', 'png') */
-  format: string;
-  /** Width of the image in pixels */
-  width: number;
-  /** Height of the image in pixels */
-  height: number;
-  /** Aspect ratio calculated as width / height */
-  aspectRatio: number;
-  /** Indicates if the image contains an alpha channel */
-  hasAlpha: boolean;
-  /** Color space of the image (e.g., 'srgb') */
-  colorSpace: string;
-  /** Number of color channels in the image */
-  channels: number;
-  /** Compression details, if applicable */
-  compression?: unknown;
-}
+import type {
+  ImageStats,
+  WatermarkPosition,
+  ImageProcessorOptions,
+  ProcessedImage
+} from 'sharpify';
 
-/**
- * Defines available positions for the watermark.
- */
-export type WatermarkPosition =
-  | 'top-left'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-right'
-  | 'center';
+// Example usage with types
+const options: ImageProcessorOptions = {
+  width: 800,
+  height: 600,
+  format: 'webp',
+  watermark: {
+    text: '© 2024',
+    position: 'bottom-right'
+  }
+};
 
-/**
- * Specifies font options for watermark text.
- */
-export type WatermarkFont =
-  | 'Arial'
-  | 'Helvetica'
-  | 'Times New Roman'
-  | 'Courier New'
-  | 'Verdana'
-  | 'Georgia'
-  | 'Custom'; // For custom fonts, you could specify any font family name
+// The processed result will be strongly typed
+const result: ProcessedImage = await Sharpify.process(imageBuffer, options);
+```
 
-/**
- * Options for customizing image processing behavior.
- */
-export interface ImageProcessorOptions {
-  width?: number; // Desired output width of the image in pixels
-  height?: number; // Desired output height of the image in pixels
-  fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside'; // Resizing method
-  position?: WatermarkPosition; // Position for cropping or watermarking
-  background?: { r: number; g: number; b: number; alpha: number }; // Background color
-  radius?: number; // Radius for rounded corners
-  blur?: number; // Blur intensity
-  sharpen?: boolean; // Apply sharpening
-  grayscale?: boolean; // Convert to grayscale
-  rotate?: number; // Rotation angle
-  flip?: boolean; // Vertical flip
-  flop?: boolean; // Horizontal flip
-  tint?: string; // Tint color
-  brightness?: number; // Adjust brightness
-  saturation?: number; // Adjust saturation
-  contrast?: number; // Adjust contrast
-  format?: 'jpeg' | 'png' | 'webp' | 'avif'; // Output format
-  quality?: number; // Compression quality (1-100)
-  watermark?: {
-    text: string; // Watermark text
-    font?: WatermarkFont; // Font family
-    size?: number; // Font size
-    color?: string; // Text color
-    opacity?: number; // Text opacity (0-1)
-    position?: WatermarkPosition; // Watermark position
-  };
-}
+### Available Types
 
-/**
- * Represents a processed image and its details.
- */
-export interface ProcessedImage {
-  data: Buffer; // Image data as a buffer
-  format: string; // Format of the processed image
-  width: number; // Width in pixels
-  height: number; // Height in pixels
-  size: number; // Size in bytes
-  metadata: {
-    hasAlpha?: boolean; // Alpha channel presence
-    isAnimated: boolean; // Indicates if the image is animated
-    pages?: number; // Number of pages or frames
-    compression?: unknown; // Compression details
-    colorSpace?: string; // Color space
-  };
-}
+- `ImageStats`: Metadata and details about an image
+- `WatermarkPosition`: Position options for watermarks ('top-left', 'center', etc.)
+- `WatermarkFont`: Available font options for watermark text
+- `ImageProcessorOptions`: Complete configuration options for image processing
+- `ProcessedImage`: Structure of the processed image result
+- `CacheEntry`: Internal cache storage structure
 
 ## API Reference
 
-### `Sharpify.process(input: Buffer, options?: ProcessOptions): Promise<ProcessedImage>`
+### Sharpify.process(input: Buffer, options?: ProcessOptions): Promise<ProcessedImage>
 
 Process a single image with various options.
 
@@ -219,7 +156,7 @@ Process a single image with various options.
 }
 ```
 
-### `Sharpify.getStats(input: Buffer): Promise<ImageStats>`
+### Sharpify.getStats(input: Buffer): Promise<ImageStats>
 
 Get detailed statistics about an image.
 
@@ -239,7 +176,7 @@ console.log(stats);
 // }
 ```
 
-### `Sharpify.getDominantColor(input: Buffer): Promise<string>`
+### Sharpify.getDominantColor(input: Buffer): Promise<string>
 
 Extract the dominant color from an image.
 
@@ -248,7 +185,7 @@ const color = await Sharpify.getDominantColor(imageBuffer);
 console.log(color); // Returns RGB format, e.g., "rgb(123, 45, 67)"
 ```
 
-### `Sharpify.batchProcess(inputs: Buffer[], options?: ProcessOptions): Promise<ProcessedImage[]>`
+### Sharpify.batchProcess(inputs: Buffer[], options?: ProcessOptions): Promise<ProcessedImage[]>
 
 Process multiple images in parallel with the same options.
 
@@ -307,7 +244,7 @@ const processed = await Sharpify.process(imageBuffer, {
 
 ## Error Handling
 
-Sharpify provides detailed error information through the `ImageProcessingError` class:
+Sharpify provides detailed error information through the ImageProcessingError class:
 
 ```typescript
 try {
@@ -332,9 +269,9 @@ try {
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch (git checkout -b feature/AmazingFeature)
+3. Commit your changes (git commit -m 'Add some AmazingFeature')
+4. Push to the branch (git push origin feature/AmazingFeature)
 5. Open a Pull Request
 
 ## License
