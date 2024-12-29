@@ -211,7 +211,7 @@ export class Sharpify {
     width: number,
     height: number,
     text: string,
-    font: string,
+    font: string = 'Arial, Helvetica, sans-serif', 
     size: number,
     color: string,
     opacity: number,
