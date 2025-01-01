@@ -5,6 +5,10 @@ A powerful TypeScript library for image processing built on top of Sharp. Sharpi
 [![npm version](https://img.shields.io/npm/v/sharpify.svg)](https://www.npmjs.com/package/sharpify)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## Demo
+
+Try out Sharpify in your browser: [Sharpify Demo](https://sharpify-demo.vercel.app/)
+
 ## Repository
 
 Find the source code and documentation on GitHub:
@@ -22,7 +26,7 @@ Find the source code and documentation on GitHub:
 - 🖼️ Comprehensive image processing capabilities
 - 🚀 Built-in image caching for improved performance
 - 🎨 Advanced color manipulation and effects
-- 💧 Watermark support with customizable positioning
+- 💧 Watermark support with customizable positioning and fonts
 - 📏 Flexible resizing and cropping options
 - 🎯 Batch processing support
 - 💪 Strong TypeScript support
@@ -68,6 +72,7 @@ Sharpify comes with comprehensive TypeScript definitions. You can import the typ
 import type {
   ImageStats,
   WatermarkPosition,
+  WatermarkFont,
   ImageProcessorOptions,
   ProcessedImage
 } from 'sharpify';
@@ -98,7 +103,7 @@ const result: ProcessedImage = await Sharpify.process(imageBuffer, options);
 
 ## API Reference
 
-### Sharpify.process(input: Buffer, options?: ProcessOptions): Promise<ProcessedImage>
+### Sharpify.process(input: Buffer, options?: ImageProcessorOptions): Promise<ProcessedImage>
 
 Process a single image with various options.
 
@@ -128,7 +133,7 @@ Process a single image with various options.
   contrast?: number;                   // adjust contrast
   watermark?: {
     text: string;                      // watermark text
-    font?: string;                     // font family
+    font?: WatermarkFont;              // font family
     size?: number;                     // font size
     color?: string;                    // text color
     opacity?: number;                  // 0-1
@@ -185,7 +190,7 @@ const color = await Sharpify.getDominantColor(imageBuffer);
 console.log(color); // Returns RGB format, e.g., "rgb(123, 45, 67)"
 ```
 
-### Sharpify.batchProcess(inputs: Buffer[], options?: ProcessOptions): Promise<ProcessedImage[]>
+### Sharpify.batchProcess(inputs: Buffer[], options?: ImageProcessorOptions): Promise<ProcessedImage[]>
 
 Process multiple images in parallel with the same options.
 
@@ -195,6 +200,37 @@ const processed = await Sharpify.batchProcess(images, {
   format: 'webp',
   quality: 80
 });
+```
+
+### Sharpify.createAvatar(input: Buffer, options?: AvatarOptions): Promise<ProcessedImage>
+
+Create an avatar from an image with specified options.
+
+#### Options
+
+```typescript
+{
+  size?: number;  // Desired size of the avatar in pixels
+}
+```
+
+#### Return Value (ProcessedImage)
+
+```typescript
+{
+  data: Buffer;              // processed avatar buffer
+  format: string;            // output format
+  width: number;            // output width
+  height: number;           // output height
+  size: number;            // file size in bytes
+  metadata: {
+    hasAlpha: boolean;     // alpha channel presence
+    isAnimated: boolean;   // animation status
+    pages?: number;        // number of pages/frames
+    compression?: string;  // compression type
+    colorSpace?: string;   // color space
+  };
+}
 ```
 
 ## Examples
@@ -239,6 +275,14 @@ const processed = await Sharpify.process(imageBuffer, {
   contrast: 1.1,
   saturation: 1.3,
   sharpen: true
+});
+```
+
+### Creating an Avatar
+
+```typescript
+const avatar = await Sharpify.createAvatar(imageBuffer, {
+  size: 400
 });
 ```
 
