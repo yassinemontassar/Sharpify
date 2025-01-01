@@ -180,6 +180,7 @@ export class Sharpify {
 
     return pipeline;
   }
+  
 
   static async createAvatar(input: Buffer, options: { size?: number } = {}): Promise<ProcessedImage> {
     try {

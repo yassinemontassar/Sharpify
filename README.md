@@ -114,7 +114,7 @@ Process a single image with various options.
   format?: 'jpeg' | 'png' | 'webp' | 'avif';
   quality?: number;                    // 1-100
   width?: number;                      // output width
-  height?: number;                     // output height
+  height?: number;                    // output height
   crop?: {                            // crop coordinates
     left: number;
     top: number;
