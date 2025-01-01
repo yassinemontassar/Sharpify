@@ -23,3 +23,5 @@ Thumbs.db
 # Test directories
 tests/
 test/
+test.ts
+images/

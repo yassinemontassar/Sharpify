@@ -139,6 +139,7 @@ Process a single image with various options.
     opacity?: number;                  // 0-1
     position?: WatermarkPosition;      // positioning
   };
+  aspectRatio?: number;                // custom aspect ratio for cropping
 }
 ```
 
@@ -262,7 +263,7 @@ const processed = await Sharpify.process(imageBuffer, {
     position: 'bottom-right',
     size: 24,
     color: 'white',
-    opacity: 0.8
+    opacity: 0.8,
   }
 });
 ```
