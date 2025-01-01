@@ -1,9 +1,10 @@
 import sharp from 'sharp';
+import { createAvatar } from './avatar';
+import { batchProcess } from './batchProcess';
 import { ImageCache } from './cache';
 import { ImageProcessingError } from './errors';
-import { ImageStats, ProcessedImage, WatermarkPosition } from './types';
-
-type ImageFormat = 'jpeg' | 'png' | 'webp' | 'avif';
+import { ImageFormat, ImageStats, ProcessedImage, WatermarkPosition } from './types';
+import { addWatermark } from './watermark';
 
 export class Sharpify {
   private static imageCache = new ImageCache();
@@ -66,6 +67,7 @@ export class Sharpify {
         background?: boolean;
         padding?: number;
       };
+      aspectRatio?: number;
     } = {}
   ): Promise<ProcessedImage> {
     try {
@@ -76,38 +78,10 @@ export class Sharpify {
       }
 
       let pipeline = sharp(input);
-
-      if (options.width || options.height) {
-        pipeline = pipeline.resize(options.width, options.height);
-      }
-      if (options.crop) {
-        pipeline = pipeline.extract(options.crop);
-      }
-
-      if (options.blur) pipeline = pipeline.blur(options.blur);
-      if (options.sharpen) pipeline = pipeline.sharpen();
-      if (options.grayscale) pipeline = pipeline.grayscale();
-      if (options.tint) pipeline = pipeline.tint(options.tint);
-
-      if (
-        typeof options.brightness === 'number' ||
-        typeof options.saturation === 'number'
-      ) {
-        const modulateOptions: { brightness?: number; saturation?: number } = {};
-        if (typeof options.brightness === 'number') modulateOptions.brightness = options.brightness;
-        if (typeof options.saturation === 'number') modulateOptions.saturation = options.saturation;
-        pipeline = pipeline.modulate(modulateOptions);
-      }
-      if (typeof options.contrast === 'number') {
-        pipeline = pipeline.linear(options.contrast, -(options.contrast - 1) * 128);
-      }
-
-      if (options.rotate) pipeline = pipeline.rotate(options.rotate);
-      if (options.flip) pipeline = pipeline.flip();
-      if (options.flop) pipeline = pipeline.flop();
+      pipeline = this.applyProcessingOptions(pipeline, options);
 
       if (options.watermark) {
-        const watermarked = await this.addWatermark(
+        const watermarked = await addWatermark(
           await pipeline.toBuffer(),
           options.watermark.text,
           options.watermark
@@ -116,9 +90,11 @@ export class Sharpify {
       }
 
       if (options.format) {
-        pipeline = pipeline.toFormat(options.format, {
-          quality: options.quality || 80,
-        });
+        try {
+          pipeline = pipeline.toFormat(options.format, { quality: options.quality });
+        } catch (error) {
+          throw new ImageProcessingError('Invalid image format', error as Error, 'process');
+        }
       }
 
       const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
@@ -146,171 +122,79 @@ export class Sharpify {
     }
   }
 
-  private static async addWatermark(
-    input: Buffer,
-    text: string,
-    {
-      font = 'system-ui',
-      size = 24,
-      color = 'white',
-      opacity = 1,
-      position = 'bottom-right',
-      background = true,
-      padding = 20
-    }: {
-      font?: string;
-      size?: number;
-      color?: string;
-      opacity?: number;
-      position?: WatermarkPosition;
-      background?: boolean;
-      padding?: number;
+  private static applyProcessingOptions(
+    pipeline: sharp.Sharp,
+    options: {
+      width?: number;
+      height?: number;
+      crop?: { left: number; top: number; width: number; height: number };
+      blur?: number;
+      sharpen?: boolean;
+      grayscale?: boolean;
+      rotate?: number;
+      flip?: boolean;
+      flop?: boolean;
+      tint?: string;
+      brightness?: number;
+      saturation?: number;
+      contrast?: number;
+      aspectRatio?: number;
     }
-  ): Promise<Buffer> {
-    try {
-      const image = sharp(input);
-      const metadata = await image.metadata();
-
-      if (!metadata.width || !metadata.height) {
-        throw new Error('Unable to determine image dimensions');
+  ): sharp.Sharp {
+    if (options.aspectRatio && options.width) {
+      const aspectRatio = options.aspectRatio;
+      const width = options.width;
+      const height = Math.round(width / aspectRatio);
+      pipeline = pipeline.resize(width, height);
+    } else {
+      if (options.width || options.height) {
+        pipeline = pipeline.resize(options.width, options.height);
       }
+    }
 
-      const svg = this.generateWatermarkSVG(
-        metadata.width,
-        metadata.height,
-        text,
-        {
-          font,
-          size,
-          color,
-          opacity,
-          position,
-          background,
-          padding
-        }
-      );
+    if (options.crop) {
+      pipeline = pipeline.extract(options.crop);
+    }
 
-      return image
-        .composite([{
-          input: Buffer.from(svg),
-          blend: 'over'
-        }])
-        .toBuffer();
+    if (options.blur) pipeline = pipeline.blur(options.blur);
+    if (options.sharpen) pipeline = pipeline.sharpen();
+    if (options.grayscale) pipeline = pipeline.grayscale();
+    if (options.tint) pipeline = pipeline.tint(options.tint);
+
+    if (
+      typeof options.brightness === 'number' ||
+      typeof options.saturation === 'number'
+    ) {
+      const modulateOptions: { brightness?: number; saturation?: number } = {};
+      if (typeof options.brightness === 'number') modulateOptions.brightness = options.brightness;
+      if (typeof options.saturation === 'number') modulateOptions.saturation = options.saturation;
+      pipeline = pipeline.modulate(modulateOptions);
+    }
+    if (typeof options.contrast === 'number') {
+      pipeline = pipeline.linear(options.contrast, -(options.contrast - 1) * 128);
+    }
+
+    if (options.rotate) pipeline = pipeline.rotate(options.rotate);
+    if (options.flip) pipeline = pipeline.flip();
+    if (options.flop) pipeline = pipeline.flop();
+
+    return pipeline;
+  }
+
+  static async createAvatar(input: Buffer, options: { size?: number } = {}): Promise<ProcessedImage> {
+    try {
+      const avatar = await createAvatar(input, options);
+      return avatar;
     } catch (error) {
-      throw new ImageProcessingError('Failed to add watermark to image', error as Error, 'addWatermark');
+      throw new ImageProcessingError('Failed to create avatar', error as Error, 'createAvatar');
     }
-  }
-
-  private static generateWatermarkSVG(
-    width: number,
-    height: number,
-    text: string,
-    {
-      font,
-      size,
-      color,
-      opacity,
-      position,
-      background,
-      padding
-    }: {
-      font: string;
-      size: number;
-      color: string;
-      opacity: number;
-      position: WatermarkPosition;
-      background: boolean;
-      padding: number;
-    }
-  ): string {
-    const estimatedTextWidth = text.length * (size * 0.6);
-    const { x, y } = this.getWatermarkPosition(
-      width,
-      height,
-      estimatedTextWidth,
-      size,
-      position,
-      padding
-    );
-  
-    const textAnchor = position.includes('right') ? 'end' : 
-                      position.includes('center') ? 'middle' : 
-                      'start';
-  
-    // Simplified font stack without @font-face
-    const fontStack = `${font}, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial, sans-serif`;
-  
-    return `
-      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        <g filter="drop-shadow(0 1px 2px rgba(0,0,0,0.5))">
-          ${background ? `
-            <rect
-              x="${x - (textAnchor === 'end' ? estimatedTextWidth : textAnchor === 'middle' ? estimatedTextWidth/2 : 0) - padding/2}"
-              y="${y - size - padding/2}"
-              width="${estimatedTextWidth + padding}"
-              height="${size + padding}"
-              fill="rgba(0,0,0,0.3)"
-              rx="3"
-              ry="3"
-            />
-          ` : ''}
-          <text
-            x="${x}"
-            y="${y}"
-            font-family="${fontStack}"
-            font-size="${size}px"
-            fill="${color}"
-            fill-opacity="${opacity}"
-            text-anchor="${textAnchor}"
-            dominant-baseline="text-after-edge"
-            textLength="${estimatedTextWidth}"
-            lengthAdjust="spacingAndGlyphs"
-          >${text}</text>
-        </g>
-      </svg>
-    `;
-  }
-  
-
-  private static getWatermarkPosition(
-    imageWidth: number,
-    imageHeight: number,
-    textWidth: number,
-    fontSize: number,
-    position: WatermarkPosition,
-    padding: number
-  ): { x: number; y: number } {
-    let x: number;
-    let y: number;
-
-    if (position.includes('top')) {
-      y = padding + fontSize;
-    } else if (position.includes('bottom')) {
-      y = imageHeight - padding;
-    } else {
-      y = imageHeight / 2;
-    }
-
-    if (position.includes('left')) {
-      x = padding;
-    } else if (position.includes('right')) {
-      x = imageWidth - padding;
-    } else {
-      x = imageWidth / 2;
-    }
-
-    return { x, y };
   }
 
   static async batchProcess(
     inputs: Buffer[],
     options: Parameters<typeof Sharpify.process>[1] = {}
   ): Promise<ProcessedImage[]> {
-    try {
-      const promises = inputs.map(input => this.process(input, options));
-      return Promise.all(promises);
-    } catch (error) {
-      throw new ImageProcessingError('Batch image processing failed', error as Error, 'batchProcess');
-    }
+    return batchProcess(inputs, options);
   }
+
 }

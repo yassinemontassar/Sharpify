@@ -40,9 +40,15 @@ export type WatermarkFont =
   | 'Helvetica'
   | 'Times New Roman'
   | 'Courier New'
+  | 'system-ui'
   | 'Verdana'
   | 'Georgia'
   | 'Custom'; // For custom fonts, you could specify any font family name
+
+/**
+ * Supported image formats.
+ */
+export type ImageFormat = 'jpeg' | 'png' | 'webp' | 'avif' | 'gif' | 'tiff';
 
 /**
  * Options for customizing image processing behavior.
@@ -84,6 +90,10 @@ export interface ImageProcessorOptions {
   format?: 'jpeg' | 'png' | 'webp' | 'avif';
   /** Quality of the image compression (1-100) */
   quality?: number;
+  /** Crop options for the image */
+  crop?: { left: number; top: number; width: number; height: number };
+  /** Custom aspect ratio for cropping (width / height) */
+  aspectRatio?: number;
   /** Watermark options for the image */
   watermark?: {
     /** Text to display as a watermark */
@@ -99,6 +109,14 @@ export interface ImageProcessorOptions {
     /** Position of the watermark on the image */
     position?: WatermarkPosition;
   };
+}
+
+/**
+ * Options for creating an avatar.
+ */
+export interface AvatarOptions {
+  /** Desired size of the avatar in pixels */
+  size?: number;
 }
 
 /**

@@ -1,7 +1,6 @@
 import sharp from 'sharp';
 import { Sharpify } from '../ImageProcessor';
 
-
 describe('Sharpify Tests', () => {
   let imageBuffer: Buffer;
   let multiColorImageBuffer: Buffer;
@@ -35,7 +34,6 @@ describe('Sharpify Tests', () => {
     })
       .png()
       .toBuffer();
-    
   };
 
   // Utility function: Create multicolor test image
@@ -92,28 +90,62 @@ describe('Sharpify Tests', () => {
       expect(thumbnail.width).toBe(50);
       expect(thumbnail.format).toBe(TEST_FORMAT);
     });
-
- 
   });
 
   describe('Effects Tests', () => {
     it('should apply sharpening effect', async () => {
       const sharpened = await Sharpify.process(imageBuffer, { sharpen: true });
-      
-      // Ensure the processed image has a valid buffer in 'data'
       expect(sharpened).toBeDefined();
-      expect(Buffer.isBuffer(sharpened.data)).toBe(true); // Access 'data' for the buffer
+      expect(Buffer.isBuffer(sharpened.data)).toBe(true);
     });
-    
 
     it('should apply adjustment effect', async () => {
       const enhanced = await Sharpify.process(imageBuffer, { brightness: 1.2, contrast: 1.3 });
-      
-      // Ensure the processed image has a valid buffer in 'data'
       expect(enhanced).toBeDefined();
-      expect(Buffer.isBuffer(enhanced.data)).toBe(true); // Access 'data' for the buffer
+      expect(Buffer.isBuffer(enhanced.data)).toBe(true);
     });
-    
+  });
+
+  describe('Watermark Tests', () => {
+    it('should apply watermark with Arial font', async () => {
+      const watermarked = await Sharpify.process(imageBuffer, {
+        watermark: {
+          text: 'Sample Watermark',
+          font: 'Arial',
+          size: 50,
+          color: 'red',
+          opacity: 1,
+          position: 'center',
+        },
+      });
+      expect(watermarked).toBeDefined();
+      expect(Buffer.isBuffer(watermarked.data)).toBe(true);
+    });
+
+    it('should apply watermark with Times New Roman font', async () => {
+      const watermarked = await Sharpify.process(imageBuffer, {
+        watermark: {
+          text: 'Sample Watermark',
+          font: 'Times New Roman',
+          size: 50,
+          color: 'red',
+          opacity: 1,
+          position: 'center',
+        },
+      });
+      expect(watermarked).toBeDefined();
+      expect(Buffer.isBuffer(watermarked.data)).toBe(true);
+    });
+  });
+
+  describe('Avatar Tests', () => {
+    it('should create an avatar image', async () => {
+      const avatar = await Sharpify.createAvatar(imageBuffer, { size: AVATAR_RADIUS });
+      expect(avatar).toBeDefined();
+      expect(Buffer.isBuffer(avatar.data)).toBe(true);
+      expect(avatar.width).toBe(AVATAR_RADIUS);
+      expect(avatar.height).toBe(AVATAR_RADIUS);
+    });
   });
 
   describe('Error Handling Tests', () => {
@@ -142,13 +174,23 @@ describe('Sharpify Tests', () => {
     it('should process 10 images in batch', async () => {
       const results = await Sharpify.batchProcess(Array(10).fill(imageBuffer), {
         width: TEST_WIDTH,
-        format: TEST_FORMAT,       
+        format: TEST_FORMAT,
       });
       expect(results).toHaveLength(10);
       results.forEach((result) => {
         expect(result.data).toBeDefined();
         expect(result.width).toBe(TEST_WIDTH);
       });
+    });
+  });
+
+  describe('Custom Aspect Ratio Cropping Tests', () => {
+    it('should crop image to custom aspect ratio', async () => {
+      const aspectRatioOptions = { width: 300, aspectRatio: 16 / 9 };
+      const processedImage = await Sharpify.process(imageBuffer, aspectRatioOptions);
+      expect(processedImage).toBeDefined();
+      expect(processedImage.width).toBe(300);
+      expect(processedImage.height).toBe(Math.round(300 / (16 / 9)));
     });
   });
 });
