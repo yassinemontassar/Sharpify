@@ -40,6 +40,7 @@ export async function addWatermark(
       }
     );
 
+    console.log('Generated SVG:', svg);
     return image
       .composite([{
         input: Buffer.from(svg),
